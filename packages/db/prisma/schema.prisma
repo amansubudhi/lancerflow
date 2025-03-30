@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String?
+  password  String
+  flows     Flow[]
+  invoices  Invoice[]
+  createdAt DateTime  @default(now())
+}
+
+model Flow {
+  id        String    @id @default(uuid())
+  userId    Int
+  name      String
+  trigger   Trigger?
+  actions   Action[]
+  flowRuns  FlowRun[]
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model AvailableTrigger {
+  id       String    @id @default(uuid())
+  name     String
+  image    String?
+  triggers Trigger[]
+}
+
+model Trigger {
+  id                 String           @id @default(uuid())
+  flowId             String           @unique
+  availableTriggerId String
+  metadata           Json             @default("{}")
+  type               AvailableTrigger @relation(fields: [availableTriggerId], references: [id])
+  flow               Flow             @relation(fields: [flowId], references: [id])
+}
+
+model AvailableAction {
+  id         String     @id @default(uuid())
+  name       String
+  image      String?
+  actions    Action[]
+  actionType ActionType @unique
+}
+
+model Action {
+  id                String          @id @default(uuid())
+  flowId            String
+  flow              Flow            @relation(fields: [flowId], references: [id])
+  availableActionId String
+  metadata          Json            @default("{}")
+  sortingOrder      Int             @default(0)
+  type              AvailableAction @relation(fields: [availableActionId], references: [id])
+}
+
+model FlowRun {
+  id            String         @id @default(uuid())
+  flowId        String
+  metadata      Json?
+  flow          Flow           @relation(fields: [flowId], references: [id])
+  flowRunOutBox FlowRunOutbox?
+  createdAt     DateTime       @default(now())
+  logs          Log[]
+}
+
+model FlowRunOutbox {
+  id        String  @id @default(uuid())
+  flowRunId String  @unique
+  flowRun   FlowRun @relation(fields: [flowRunId], references: [id])
+}
+
+model Invoice {
+  id          String          @id @default(uuid())
+  provider    InvoiceProvider
+  providerId  String          @unique
+  userId      Int
+  clientEmail String
+  amountDue   Float
+  status      InvoiceStatus
+  createdAt   DateTime        @default(now())
+  user        User            @relation(fields: [userId], references: [id])
+  approval    Approval[]
+}
+
+// Logs (Error & Activity Logs)
+model Log {
+  id        String   @id @default(uuid())
+  flowRunId String?
+  flowRun   FlowRun? @relation(fields: [flowRunId], references: [id])
+  level     String // "info", "warning", "error"
+  message   String
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+
+// Approval (For tracking invoice approval status)
+model Approval {
+  id         String         @id @default(uuid())
+  invoiceId  String
+  invoice    Invoice        @relation(fields: [invoiceId], references: [id])
+  status     ApprovalStatus
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+enum ActionType {
+  EMAIL
+  INVOICE
+  DELAY
+  WEBHOOK
+  NOTIFICATION
+}
+
+enum InvoiceProvider {
+  STRIPE
+  PAYPAL
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  UNCOLLECTIBLE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
