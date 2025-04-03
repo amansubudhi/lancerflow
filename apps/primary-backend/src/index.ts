@@ -11,6 +11,10 @@ const app = express();
 app.use(express.json())
 app.use(cors())
 
+const PORT = process.env.PORT ?? 3000
+
 
 app.use("/api/v1/user", userRouter);
-app.use("/api/v1/user", flowRouter);
+app.use("/api/v1/flow", flowRouter);
+
+app.listen(PORT)
