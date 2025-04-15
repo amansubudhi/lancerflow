@@ -2,8 +2,8 @@ import { Kafka, Partitioners } from "kafkajs";
 import client from "@repo/db/client"
 
 const kafka = new Kafka({
-    clientId: 'my-app',
-    brokers: ['kafka1:9092', 'kafka2:9092']
+    clientId: 'processor-service',
+    brokers: ['localhost:9092']
 })
 
 const producer = kafka.producer({

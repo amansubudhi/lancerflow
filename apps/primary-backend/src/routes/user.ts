@@ -3,7 +3,7 @@ import client from "@repo/db/client"
 import { SigninSchema, SignupSchema } from "../types";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from "../config/auth.config";
+import { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY_MS } from "../config/auth.config";
 
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET ?? "secret";
@@ -129,12 +129,12 @@ router.post("/signin", async (req, res) => {
             },
             update: {
                 refreshTokenHash: hashedRefreshToken,
-                expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
+                expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
             },
             create: {
                 userId: user.id,
                 refreshTokenHash: hashedRefreshToken,
-                expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
+                expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
             }
         })
 
@@ -142,7 +142,7 @@ router.post("/signin", async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "none",
-            maxAge: REFRESH_TOKEN_EXPIRY,
+            maxAge: REFRESH_TOKEN_EXPIRY_MS,
         });
 
 
@@ -185,7 +185,7 @@ router.post("/refresh", async (req, res) => {
 
         if (new Date() > storedToken.expiresAt) {
             return res.status(403).json({
-                message: "Refrsh token expired"
+                message: "Refresh token expired"
             })
         }
 
@@ -216,7 +216,7 @@ router.post("/refresh", async (req, res) => {
             },
             data: {
                 refreshTokenHash: newRefreshTokenHash,
-                expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY)
+                expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS)
             }
         });
 
@@ -224,7 +224,7 @@ router.post("/refresh", async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "none",
-            maxAge: REFRESH_TOKEN_EXPIRY
+            maxAge: REFRESH_TOKEN_EXPIRY_MS
         });
 
         res.status(200).json({
@@ -262,7 +262,7 @@ router.post("/logout", async (req, res) => {
             sameSite: "none"
         });
 
-        res.json(200).json({
+        res.status(200).json({
             message: "Logged out successfully"
         })
     } catch (error: any) {

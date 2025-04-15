@@ -1,5 +1,5 @@
 {
-  "name": "processor",
+  "name": "worker",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -11,9 +11,11 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "devDependencies": {
+    "@types/kafkajs": "^1.8.2"
+  },
   "dependencies": {
     "@repo/db": "*",
-    "@types/kafkajs": "^1.8.2",
     "kafkajs": "^2.2.4"
   }
 }
