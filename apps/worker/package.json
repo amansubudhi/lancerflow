@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@repo/db": "*",
+    "dotenv": "^16.5.0",
     "kafkajs": "^2.2.4"
   }
 }

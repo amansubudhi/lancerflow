@@ -8,16 +8,33 @@ datasource db {
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String        @unique
-  name          String?
-  password      String?
-  provider      AuthProvider  @default(LOCAL)
-  providerId    String?       @unique
-  flows         Flow[]
-  invoices      Invoice[]
-  createdAt     DateTime      @default(now())
-  refreshTokens RefreshToken?
+  id                    Int                     @id @default(autoincrement())
+  email                 String                  @unique
+  name                  String?
+  password              String?
+  provider              AuthProvider            @default(LOCAL)
+  providerId            String?                 @unique
+  flows                 Flow[]
+  invoices              Invoice[]
+  connectedAccounts     ConnectedAccount[]
+  createdAt             DateTime                @default(now())
+  refreshTokens         RefreshToken?
+  processedEmailMesages ProcessedEmailMessage[]
+}
+
+model ConnectedAccount {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  provider     String
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  email        String
+  scope        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id])
+  triggers     Trigger[]
 }
 
 model RefreshToken {
@@ -37,24 +54,30 @@ model Flow {
   trigger   Trigger?
   actions   Action[]
   flowRuns  FlowRun[]
+  isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id])
 }
 
 model AvailableTrigger {
-  id       String    @id @default(uuid())
-  name     String
-  image    String?
-  triggers Trigger[]
+  id          String       @id @default(uuid())
+  name        String
+  image       String?
+  triggerType TriggerType? @unique
+  triggers    Trigger[]
 }
 
 model Trigger {
-  id                 String           @id @default(uuid())
-  flowId             String           @unique
-  availableTriggerId String
-  metadata           Json             @default("{}")
-  type               AvailableTrigger @relation(fields: [availableTriggerId], references: [id])
-  flow               Flow             @relation(fields: [flowId], references: [id])
+  id                    String                  @id @default(uuid())
+  flowId                String                  @unique
+  availableTriggerId    String
+  metadata              Json                    @default("{}")
+  connectedAccountId    Int?
+  isActive              Boolean                 @default(true)
+  processedGmailMessage ProcessedEmailMessage[]
+  type                  AvailableTrigger        @relation(fields: [availableTriggerId], references: [id])
+  flow                  Flow                    @relation(fields: [flowId], references: [id])
+  connectedAccount      ConnectedAccount?       @relation(fields: [connectedAccountId], references: [id])
 }
 
 model AvailableAction {
@@ -127,9 +150,27 @@ model Approval {
   updatedAt  DateTime       @updatedAt
 }
 
+model ProcessedEmailMessage {
+  id        String   @id @default(uuid())
+  triggerId String
+  userId    Int
+  messageId String
+  createdAt DateTime @default(now())
+  trigger   Trigger  @relation(fields: [triggerId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([triggerId, messageId])
+}
+
 enum AuthProvider {
   LOCAL
   GOOGLE
+}
+
+enum TriggerType {
+  GMAIL_LABEL
+  CRON
+  WEBHOOK
 }
 
 enum ActionType {
