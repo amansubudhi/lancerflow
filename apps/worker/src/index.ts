@@ -1,5 +1,9 @@
+import "./config/env"
+
 import { Kafka, Partitioners } from "kafkajs"
 import client from "@repo/db/client"
+import { hasEmailMetadata } from "./types/flowRunMetadata"
+import createInvoiceDraft from "./invoices/generateInvoiceDraft"
 
 
 const kafka = new Kafka({
@@ -56,6 +60,8 @@ async function main() {
             //send a query to get back the actions associated to this flow id
             //find the available actions
 
+            const userId = flowRunDetails?.flow.userId;
+
             const currentAction = flowRunDetails?.flow.actions.find(x => x.sortingOrder === stage);
 
             if (!currentAction) {
@@ -65,8 +71,23 @@ async function main() {
 
             const flowRunMetadata = flowRunDetails?.metadata;
 
+            if (currentAction.type.actionType === "INVOICE") {
+                console.log("Reached here")
+                console.log(flowRunMetadata);
+                if (userId && flowRunMetadata && hasEmailMetadata(flowRunMetadata)) {
+                    console.log(flowRunMetadata.emailMetadata)
+                    const { from: clientDetails, to: senderDetails, threadId } = flowRunMetadata.emailMetadata;
+                    createInvoiceDraft({ clientDetails, senderDetails, threadId, flowRunId, userId });
+
+                } else {
+                    console.error('FlowRunMetadata is missing or invalid');
+                }
+            }
+
             if (currentAction.type.actionType === "EMAIL") {
-                console.log("Sending out Email")
+                console.log(flowRunDetails?.flow.actions)
+                console.log(currentAction.type.actionType)
+                console.log("Reaching Wrong place")
             }
 
             if (currentAction.type.actionType === "NOTIFICATION") {

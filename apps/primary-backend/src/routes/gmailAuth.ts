@@ -7,23 +7,28 @@ import { connectedAccountRouter } from './connectedAccount';
 
 const router = Router();
 
-router.get("/", authMiddleware, (req, res) => {
+router.get("/", (req, res) => {
     const url = oauth2client.generateAuthUrl({
         access_type: 'offline',
         prompt: 'consent',
         scope: [
-            'https://www.googleapis.com/auth/gmail.send',
-            'https://www.googleapis.com/auth/userinfo.email'
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.labels',
+            'https://www.googleapis.com/auth/gmail.modify',
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile',
         ]
     });
     res.redirect(url);
 })
 
-router.get("/callback", authMiddleware, async (req, res) => {
+router.get("/callback", async (req, res) => {
     const code = req.query.code as string;
 
     try {
-        const userId = Number(req.id);
+        // const userId = Number(req.id);
+        const userId = 3;
+
         const { tokens } = await oauth2client.getToken(code);
         oauth2client.setCredentials(tokens);
 
@@ -38,21 +43,32 @@ router.get("/callback", authMiddleware, async (req, res) => {
             },
         });
 
+        const accountData = {
+            accessToken: tokens.access_token as string,
+            refreshToken: tokens.refresh_token ?? existingAccount?.refreshToken ?? '',
+            expiresAt: new Date(tokens.expiry_date!),
+            scope: tokens.scope,
+            email: userEmail!
+        }
+
         if (existingAccount) {
-            return res.status(400).json({
-                message: 'Google account already connected'
+            await client.connectedAccount.update({
+                where: {
+                    id: existingAccount.id
+                },
+                data: accountData
+            });
+
+            return res.status(200).json({
+                message: 'Google account reconnected and updated successfully'
             })
         }
 
-        const connectedAccount = await client.connectedAccount.create({
+        await client.connectedAccount.create({
             data: {
                 userId,
                 provider: 'GOOGLE',
-                accessToken: tokens.access_token as string,
-                refreshToken: tokens.refresh_token as string,
-                expiresAt: new Date(tokens.expiry_date!),
-                scope: tokens.scope,
-                email: userEmail!
+                ...accountData
             }
         })
 

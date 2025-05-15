@@ -34,3 +34,25 @@ export const FlowUpdateSchema = z.object({
         actionMetadata: z.any().optional()
     })).optional()
 })
+
+
+export const createInvoiceDraftSchema = z.object({
+    userId: z.number(),
+    clientName: z.string(),
+    clientEmail: z.string().email(),
+    senderName: z.string(),
+    senderEmail: z.string().email(),
+    threadId: z.string(),
+    flowRunId: z.string()
+});
+
+export const InvoiceUpdateSchema = z.object({
+    clientName: z.string().optional(),
+    clientEmail: z.string().email().optional(),
+    senderName: z.string().optional(),
+    senderEmail: z.string().email().optional(),
+    services: z.array(z.object({
+        name: z.string(),
+        price: z.string()
+    })).optional()
+})

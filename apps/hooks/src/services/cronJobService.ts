@@ -1,7 +1,7 @@
 import cron from "node-cron"
 import { checkGmailLabelTriggers } from "./checkGmailLabelTrigger";
 
-cron.schedule('*/5 * * * *', async () => {
+cron.schedule('* * * * *', async () => {
     try {
         console.log('Checking for new email with specific label...');
         await checkGmailLabelTriggers();

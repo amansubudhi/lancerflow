@@ -1,8 +1,7 @@
+import "./config/env"
+
 import express from "express";
 import client from "@repo/db/client"
-import dotenv from "dotenv"
-
-dotenv.config()
 
 import "./services/cronJobService"
 
@@ -48,7 +47,7 @@ app.post("/trigger/:triggerId", async (req, res) => {
         })
 
         res.status(200).json({
-            message: "Flow run crated Successfully"
+            message: "Flow run created Successfully"
         })
 
     } catch (error) {

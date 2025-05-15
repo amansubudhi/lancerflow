@@ -106,6 +106,7 @@ model FlowRun {
   flowRunOutBox FlowRunOutbox?
   createdAt     DateTime       @default(now())
   logs          Log[]
+  invoice       Invoice[]
 }
 
 model FlowRunOutbox {
@@ -115,15 +116,20 @@ model FlowRunOutbox {
 }
 
 model Invoice {
-  id          String          @id @default(uuid())
-  provider    InvoiceProvider
-  providerId  String          @unique
+  id          String        @id @default(uuid())
   userId      Int
+  senderName  String
+  senderEmail String
+  clientName  String
   clientEmail String
   amountDue   Float
   status      InvoiceStatus
-  createdAt   DateTime        @default(now())
-  user        User            @relation(fields: [userId], references: [id])
+  services    Json?
+  invoiceHtml String?
+  flowRunId   String?
+  createdAt   DateTime      @default(now())
+  flowRun     FlowRun?      @relation(fields: [flowRunId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
   approval    Approval[]
 }
 
@@ -179,11 +185,6 @@ enum ActionType {
   DELAY
   WEBHOOK
   NOTIFICATION
-}
-
-enum InvoiceProvider {
-  STRIPE
-  PAYPAL
 }
 
 enum InvoiceStatus {
