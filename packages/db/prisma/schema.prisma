@@ -26,11 +26,14 @@ model ConnectedAccount {
   id           Int       @id @default(autoincrement())
   userId       Int
   provider     String
-  accessToken  String
-  refreshToken String
-  expiresAt    DateTime
-  email        String
+  type         Authtype
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  apiKey       String?
+  email        String?
   scope        String?
+  config       Json?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   user         User      @relation(fields: [userId], references: [id])
@@ -171,6 +174,14 @@ model ProcessedEmailMessage {
 enum AuthProvider {
   LOCAL
   GOOGLE
+}
+
+// For connected Accounts
+enum Authtype {
+  OAUTH
+  API_KEY
+  WEBHOOK
+  NONE
 }
 
 enum TriggerType {
