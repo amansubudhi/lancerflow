@@ -2,8 +2,9 @@ import "./config/env"
 
 import { Kafka, Partitioners } from "kafkajs"
 import client from "@repo/db/client"
-import { hasEmailMetadata } from "./types/flowRunMetadata"
+import { hasEmailMetadata, hasTogglMetadata } from "./types/flowRunMetadata"
 import createInvoiceDraft from "./invoices/generateInvoiceDraft"
+import { fetchTogglTimeEntries } from "./reports/togglTimeEntries"
 
 
 const kafka = new Kafka({
@@ -84,11 +85,19 @@ async function main() {
                 }
             }
 
-            if (currentAction.type.actionType === "EMAIL") {
-                console.log(flowRunDetails?.flow.actions)
-                console.log(currentAction.type.actionType)
-                console.log("Reaching Wrong place")
+            //For now keeping notification but later change to cron or report or something
+            //also chnage in flowRunMetadata.ts
+            if (currentAction.type.actionType === "NOTIFICATION") {
+                console.log(flowRunMetadata);
+                if (userId && flowRunMetadata && hasTogglMetadata(flowRunMetadata))
+                    await fetchTogglTimeEntries(flowRunMetadata, userId);
             }
+
+            // if (currentAction.type.actionType === "EMAIL") {
+            //     console.log(flowRunDetails?.flow.actions)
+            //     console.log(currentAction.type.actionType)
+            //     console.log("Reaching Wrong place")
+            // }
 
             if (currentAction.type.actionType === "NOTIFICATION") {
                 console.log("Sending out Notification");

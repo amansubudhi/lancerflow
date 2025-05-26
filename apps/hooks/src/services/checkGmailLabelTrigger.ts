@@ -39,9 +39,9 @@ export async function checkGmailLabelTriggers() {
 
 
             const oAuthClient = createOAuthClient({
-                accessToken: connectedAccount.accessToken,
-                refreshToken: connectedAccount.refreshToken,
-                expiryDate: connectedAccount.expiresAt,
+                accessToken: connectedAccount.accessToken || "",
+                refreshToken: connectedAccount.refreshToken || "",
+                expiryDate: connectedAccount.expiresAt || new Date(Date.now()),
                 clientId: process.env.GMAIL_CLIENT_ID!,
                 clientSecret: process.env.GMAIL_CLIENT_SECRET!
             });

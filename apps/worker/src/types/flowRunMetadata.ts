@@ -12,6 +12,12 @@ export interface EmailFlowRunMetadata extends BaseFlowRunMetadata {
     },
 }
 
+export interface TogglFlowRunMetadata extends BaseFlowRunMetadata {
+    type: "NOTIFICATION",
+    reportDay: number;
+    connectedAccountId: number;
+}
+
 export type FlowRunMetadata = EmailFlowRunMetadata;
 
 export function hasEmailMetadata(metadata: any): metadata is EmailFlowRunMetadata {
@@ -23,5 +29,15 @@ export function hasEmailMetadata(metadata: any): metadata is EmailFlowRunMetadat
         typeof metadata.emailMetadata.from === "string" &&
         typeof metadata.emailMetadata.to === "string" &&
         typeof metadata.emailMetadata.threadId === "string"
+    )
+}
+
+export function hasTogglMetadata(metadata: any): metadata is TogglFlowRunMetadata {
+    return (
+        metadata &&
+        metadata.type === "NOTIFICATION" &&
+        typeof metadata.userId === "number" &&
+        typeof metadata.reportDay === "number" &&
+        typeof metadata.connectedAccountId === "number"
     )
 }

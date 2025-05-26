@@ -3,7 +3,6 @@ import { oauth2client } from '../utils/googleClient';
 import client from "@repo/db/client"
 import { authMiddleware } from '../middleware';
 import { google } from 'googleapis';
-import { connectedAccountRouter } from './connectedAccount';
 
 const router = Router();
 
@@ -39,7 +38,7 @@ router.get("/callback", async (req, res) => {
         const existingAccount = await client.connectedAccount.findFirst({
             where: {
                 userId,
-                provider: 'GOOGLE'
+                provider: 'GMAIL'
             },
         });
 
@@ -60,20 +59,21 @@ router.get("/callback", async (req, res) => {
             });
 
             return res.status(200).json({
-                message: 'Google account reconnected and updated successfully'
+                message: 'Gmail account reconnected and updated successfully'
             })
         }
 
         await client.connectedAccount.create({
             data: {
                 userId,
-                provider: 'GOOGLE',
+                type: 'OAUTH',
+                provider: 'GMAIL',
                 ...accountData
             }
         })
 
         res.status(200).json({
-            message: 'Google account connected successfully'
+            message: 'Gmail account connected successfully'
         })
     } catch (error) {
         console.log('Error during authentication', error)
@@ -89,13 +89,13 @@ router.post("/refreshToken", authMiddleware, async (req, res) => {
         connectedAccount = await client.connectedAccount.findFirst({
             where: {
                 userId,
-                provider: 'GOOGLE'
+                provider: 'GMAIL'
             }
         });
 
         if (!connectedAccount) {
             return res.status(404).json({
-                message: 'No connected Google account found'
+                message: 'No connected Gmail account found'
             })
         }
 
@@ -141,7 +141,7 @@ router.post("/refreshToken", authMiddleware, async (req, res) => {
             });
 
             return res.status(401).json({
-                message: 'Refresh token is invalid or expired. Please reconnect your Google account.'
+                message: 'Refresh token is invalid or expired. Please reconnect your Gmail account.'
             })
         }
 
@@ -152,4 +152,4 @@ router.post("/refreshToken", authMiddleware, async (req, res) => {
     }
 });
 
-export const googleAuthRouter = router;
+export const gmailAuthRouter = router;
