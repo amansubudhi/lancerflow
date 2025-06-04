@@ -8,24 +8,25 @@ datasource db {
 }
 
 model User {
-  id                    Int                     @id @default(autoincrement())
-  email                 String                  @unique
-  name                  String?
-  password              String?
-  provider              AuthProvider            @default(LOCAL)
-  providerId            String?                 @unique
-  flows                 Flow[]
-  invoices              Invoice[]
-  connectedAccounts     ConnectedAccount[]
-  createdAt             DateTime                @default(now())
-  refreshTokens         RefreshToken?
-  processedEmailMesages ProcessedEmailMessage[]
+  id                 Int                @id @default(autoincrement())
+  email              String             @unique
+  name               String?
+  password           String?
+  provider           AuthProvider       @default(LOCAL)
+  providerId         String?            @unique
+  testimonialFormUrl String?
+  flows              Flow[]
+  invoices           Invoice[]
+  connectedAccounts  ConnectedAccount[]
+  createdAt          DateTime           @default(now())
+  refreshToken       RefreshToken?
+  clients            Client[]
 }
 
 model ConnectedAccount {
   id           Int       @id @default(autoincrement())
   userId       Int
-  provider     String
+  provider     Provider
   type         Authtype
   accessToken  String?
   refreshToken String?
@@ -47,7 +48,7 @@ model RefreshToken {
   expiresAt        DateTime
   user             User     @relation(fields: [userId], references: [id])
   createdAt        DateTime @default(now())
-  updateAt         DateTime @updatedAt
+  updatedAt        DateTime @updatedAt
 }
 
 model Flow {
@@ -59,6 +60,7 @@ model Flow {
   flowRuns  FlowRun[]
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   user      User      @relation(fields: [userId], references: [id])
 }
 
@@ -71,16 +73,15 @@ model AvailableTrigger {
 }
 
 model Trigger {
-  id                    String                  @id @default(uuid())
-  flowId                String                  @unique
-  availableTriggerId    String
-  metadata              Json                    @default("{}")
-  connectedAccountId    Int?
-  isActive              Boolean                 @default(true)
-  processedGmailMessage ProcessedEmailMessage[]
-  type                  AvailableTrigger        @relation(fields: [availableTriggerId], references: [id])
-  flow                  Flow                    @relation(fields: [flowId], references: [id])
-  connectedAccount      ConnectedAccount?       @relation(fields: [connectedAccountId], references: [id])
+  id                 String            @id @default(uuid())
+  flowId             String            @unique
+  availableTriggerId String
+  metadata           Json              @default("{}")
+  connectedAccountId Int?
+  isActive           Boolean           @default(true)
+  type               AvailableTrigger  @relation(fields: [availableTriggerId], references: [id])
+  flow               Flow              @relation(fields: [flowId], references: [id])
+  connectedAccount   ConnectedAccount? @relation(fields: [connectedAccountId], references: [id])
 }
 
 model AvailableAction {
@@ -104,12 +105,14 @@ model Action {
 model FlowRun {
   id            String         @id @default(uuid())
   flowId        String
+  clientId      Int?
   metadata      Json?
+  client        Client?        @relation(fields: [clientId], references: [id])
   flow          Flow           @relation(fields: [flowId], references: [id])
   flowRunOutBox FlowRunOutbox?
   createdAt     DateTime       @default(now())
   logs          Log[]
-  invoice       Invoice[]
+  invoice       Invoice?
 }
 
 model FlowRunOutbox {
@@ -118,22 +121,41 @@ model FlowRunOutbox {
   flowRun   FlowRun @relation(fields: [flowRunId], references: [id])
 }
 
+model Client {
+  id                   Int       @id @default(autoincrement())
+  userId               Int
+  name                 String
+  email                String
+  companyName          String?
+  phone                String?
+  notes                String?
+  deadline             DateTime
+  services             Json?
+  testimonialRequested Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  user                 User      @relation(fields: [userId], references: [id])
+  invoices             Invoice[]
+  flowRuns             FlowRun[]
+}
+
 model Invoice {
-  id          String        @id @default(uuid())
-  userId      Int
-  senderName  String
-  senderEmail String
-  clientName  String
-  clientEmail String
-  amountDue   Float
-  status      InvoiceStatus
-  services    Json?
-  invoiceHtml String?
-  flowRunId   String?
-  createdAt   DateTime      @default(now())
-  flowRun     FlowRun?      @relation(fields: [flowRunId], references: [id])
-  user        User          @relation(fields: [userId], references: [id])
-  approval    Approval[]
+  id             String        @id @default(uuid())
+  invoiceNumber  Int           @unique @default(autoincrement())
+  userId         Int
+  clientId       Int
+  services       Json?
+  clientsnapshot Json?
+  amountDue      Float
+  status         InvoiceStatus
+  pdfUrl         String?
+  followUpSent   Boolean       @default(false)
+  flowRunId      String?       @unique
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  client         Client        @relation(fields: [clientId], references: [id])
+  flowRun        FlowRun?      @relation(fields: [flowRunId], references: [id])
+  approval       Approval[]
 }
 
 // Logs (Error & Activity Logs)
@@ -150,25 +172,13 @@ model Log {
 // Approval (For tracking invoice approval status)
 model Approval {
   id         String         @id @default(uuid())
-  invoiceId  String
-  invoice    Invoice        @relation(fields: [invoiceId], references: [id])
+  invoiceId  String?
+  invoice    Invoice?       @relation(fields: [invoiceId], references: [id])
   status     ApprovalStatus
   reviewedBy String?
   reviewedAt DateTime?
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
-}
-
-model ProcessedEmailMessage {
-  id        String   @id @default(uuid())
-  triggerId String
-  userId    Int
-  messageId String
-  createdAt DateTime @default(now())
-  trigger   Trigger  @relation(fields: [triggerId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@unique([triggerId, messageId])
 }
 
 enum AuthProvider {
@@ -177,6 +187,15 @@ enum AuthProvider {
 }
 
 // For connected Accounts
+
+enum Provider {
+  TOGGL
+  GMAIL
+  NOTION
+  STRIPE
+  OTHER
+}
+
 enum Authtype {
   OAUTH
   API_KEY
@@ -185,8 +204,8 @@ enum Authtype {
 }
 
 enum TriggerType {
-  GMAIL_LABEL
-  CRON
+  CLIENT_ONBOARDING
+  SCHEDULE
   WEBHOOK
 }
 
@@ -194,15 +213,15 @@ enum ActionType {
   EMAIL
   INVOICE
   DELAY
-  WEBHOOK
   NOTIFICATION
 }
 
 enum InvoiceStatus {
   DRAFT
-  OPEN
+  SENT
   PAID
-  UNCOLLECTIBLE
+  PARTIALLY_PAID
+  CANCELLED
 }
 
 enum ApprovalStatus {

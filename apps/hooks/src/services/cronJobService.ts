@@ -12,12 +12,20 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-// Run everyday at 7 pm - IST
+// Run everyday at 7 pm - IST for Toggl
 cron.schedule('', async () => {
     try {
         console.log('Fetching Toggl Report....');
         await fetchTogglTimeEntriesTrigger();
     } catch (error) {
         console.error('Error in fetching Toggl Report cron job:', error);
+    }
+})
+
+
+cron.schedule('', async () => {
+    try {
+        console.log("Checking invoices with finalised status and the deadline is over");
+        await 
     }
 })

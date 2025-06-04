@@ -1,9 +1,10 @@
 import { Router } from "express";
-import client from "@repo/db/client"
-import { SigninSchema, SignupSchema } from "../types";
+import db from "@repo/db/client"
+import { SigninSchema, SignupSchema, UserUpdateSchema } from "../types";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY_MS } from "../config/auth.config";
+import { authMiddleware } from "../middleware";
 
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET ?? "secret";
@@ -23,7 +24,7 @@ router.post("/signup", async (req, res) => {
             });
         }
 
-        const userExists = await client.user.findUnique({
+        const userExists = await db.user.findUnique({
             where: {
                 email: body.email
             }
@@ -45,7 +46,7 @@ router.post("/signup", async (req, res) => {
             hashedPassword = await bcrypt.hash(body.password, 10);
         }
 
-        const newUser = await client.user.create({
+        const newUser = await db.user.create({
             data: {
                 email: body.email,
                 name: body.name,
@@ -77,7 +78,7 @@ router.post("/signin", async (req, res) => {
             })
         }
 
-        const user = await client.user.findUnique({
+        const user = await db.user.findUnique({
             where: {
                 email: body.email
             }
@@ -123,7 +124,7 @@ router.post("/signin", async (req, res) => {
 
         const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
-        await client.refreshToken.upsert({
+        await db.refreshToken.upsert({
             where: {
                 userId: user.id
             },
@@ -165,7 +166,7 @@ router.post("/refresh", async (req, res) => {
 
         const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as { id: number };
 
-        const storedToken = await client.refreshToken.findUnique({
+        const storedToken = await db.refreshToken.findUnique({
             where: {
                 userId: decoded.id
             }, include: {
@@ -210,7 +211,7 @@ router.post("/refresh", async (req, res) => {
         })
 
         const newRefreshTokenHash = await bcrypt.hash(newRefreshToken, 10);
-        await client.refreshToken.update({
+        await db.refreshToken.update({
             where: {
                 userId: storedToken.userId
             },
@@ -250,7 +251,7 @@ router.post("/logout", async (req, res) => {
 
         const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as { id: number };
 
-        await client.refreshToken.deleteMany({
+        await db.refreshToken.deleteMany({
             where: {
                 userId: decoded.id
             }
@@ -269,6 +270,41 @@ router.post("/logout", async (req, res) => {
         console.error("Logout Error:", error.message || error);
         res.status(500).json({
             message: "Logout failed"
+        })
+    }
+})
+
+
+router.patch("/", authMiddleware, async (req, res) => {
+    try {
+        const userId = Number(req.id);
+        const body = req.body;
+
+        const parsedData = UserUpdateSchema.safeParse(body);
+
+        if (!parsedData.success) {
+            return res.status(400).json({
+                message: "Invalid Input"
+            })
+        }
+
+        await db.user.update({
+            where: {
+                id: userId
+            },
+            data: {
+                testimonialFormUrl: parsedData.data?.testimonialFormUrl
+            }
+        })
+
+        res.status(200).json({
+            message: 'User updated successfully'
+        })
+
+    } catch (error: any) {
+        console.error(error);
+        res.status(500).json({
+            message: "Unable to update user"
         })
     }
 })

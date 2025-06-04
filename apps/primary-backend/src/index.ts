@@ -8,6 +8,7 @@ import { gmailAuthRouter } from "./routes/gmailAuth";
 import { connectedAccountRouter } from "./routes/connectedAccount";
 import { invoiceRouter } from "./routes/invoice";
 import { togglauthRouter } from "./routes/togglAuth";
+import { clientRouter } from "./routes/client";
 
 
 const app = express();
@@ -21,6 +22,8 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/flow", flowRouter);
 
 app.use("/api/v1/connected-account", connectedAccountRouter);
+
+app.use("/api/v1/client", clientRouter);
 
 app.use("/api/auth/google", gmailAuthRouter);
 app.use("/api/auth/toggl", togglauthRouter);

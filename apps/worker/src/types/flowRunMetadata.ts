@@ -4,11 +4,11 @@ export interface BaseFlowRunMetadata {
 }
 
 export interface EmailFlowRunMetadata extends BaseFlowRunMetadata {
-    type: "GMAIL_LABEL",
+    type: "EMAIL",
     emailMetadata: {
         from: string;
         to: string;
-        threadId: string;
+        attachment: string[];
     },
 }
 

@@ -1,31 +1,32 @@
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 import axios from "axios";
 
 export async function fetchTogglTimeEntriesTrigger() {
     try {
-        const triggers = await client.trigger.findMany({
+        const triggers = await db.trigger.findMany({
             where: {
                 type: {
-                    triggerType: "CRON"
+                    triggerType: "SCHEDULE"
                 },
                 isActive: true,
                 connectedAccount: {
-                    isNot: null,
+                    is: {
+                        provider: "TOGGL",
+                    }
                 }
             },
             include: {
                 connectedAccount: true,
                 type: true,
-                flow: true,
+                flow: {
+                    include: {
+                        user: true
+                    }
+                },
             }
         })
 
         for (const trigger of triggers) {
-            const connectedAccount = trigger.connectedAccount;
-            if (!connectedAccount) {
-                console.warn(`Trigger ${trigger.id} has no connected account.`);
-                continue;
-            }
 
             const metadata = trigger.metadata as { reportDay?: number };
             const reportDay = metadata.reportDay;
@@ -38,13 +39,17 @@ export async function fetchTogglTimeEntriesTrigger() {
                 timeZone: "Asia/Kolkata"
             });
 
-            const connectedAccountId = trigger.connectedAccount?.id;
 
+            const emailMetadata = {
+                userName: trigger.flow.user.name,
+                userEmail: trigger.flow.user.email
+            }
             const dayNum = new Date(todayIST).getDay();
             if (reportDay === dayNum)
                 await axios.post(`${process.env.HOOKS_SERVICE_URL}/trigger/${trigger.id}`, {
                     reportDay,
-                    connectedAccountId: connectedAccount.id,
+                    connectedAccountId: trigger.connectedAccountId,
+                    emailMetadata
                 });
         }
     } catch (error: any) {

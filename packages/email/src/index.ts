@@ -5,12 +5,16 @@ type SendEmailParams = {
     to: string;
     subject: string;
     htmlContent: string;
+    replyTo?: string;
+    attachments?: [];
 };
 
 export default async function sendEmail({
     to,
     subject,
-    htmlContent
+    htmlContent,
+    replyTo,
+    attachments
 }: SendEmailParams): Promise<{ data: any; error: any }> {
     try {
         const resend = new Resend(process.env.RESEND_API_KEY!);
@@ -18,7 +22,9 @@ export default async function sendEmail({
             from: 'LancerFlow <noreply@lancerflow.amansubudhi.tech>',
             to: [to],
             subject,
-            html: htmlContent
+            html: htmlContent,
+            replyTo,
+            attachments
         });
 
         return result;

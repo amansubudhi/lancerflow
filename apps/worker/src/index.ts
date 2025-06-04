@@ -1,7 +1,7 @@
 import "./config/env"
 
 import { Kafka, Partitioners } from "kafkajs"
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 import { hasEmailMetadata, hasTogglMetadata } from "./types/flowRunMetadata"
 import createInvoiceDraft from "./invoices/generateInvoiceDraft"
 import { fetchTogglTimeEntries } from "./reports/togglTimeEntries"
@@ -40,7 +40,7 @@ async function main() {
             const flowRunId = parsedValue.flowRunId;
             const stage = parsedValue.stage;
 
-            const flowRunDetails = await client.flowRun.findFirst({
+            const flowRunDetails = await db.flowRun.findFirst({
                 where: {
                     id: flowRunId
                 },
@@ -72,35 +72,11 @@ async function main() {
 
             const flowRunMetadata = flowRunDetails?.metadata;
 
-            if (currentAction.type.actionType === "INVOICE") {
-                console.log("Reached here")
-                console.log(flowRunMetadata);
-                if (userId && flowRunMetadata && hasEmailMetadata(flowRunMetadata)) {
-                    console.log(flowRunMetadata.emailMetadata)
-                    const { from: clientDetails, to: senderDetails, threadId } = flowRunMetadata.emailMetadata;
-                    createInvoiceDraft({ clientDetails, senderDetails, threadId, flowRunId, userId });
-
-                } else {
-                    console.error('FlowRunMetadata is missing or invalid');
-                }
-            }
-
-            //For now keeping notification but later change to cron or report or something
-            //also chnage in flowRunMetadata.ts
-            if (currentAction.type.actionType === "NOTIFICATION") {
-                console.log(flowRunMetadata);
-                if (userId && flowRunMetadata && hasTogglMetadata(flowRunMetadata))
-                    await fetchTogglTimeEntries(flowRunMetadata, userId);
-            }
-
-            // if (currentAction.type.actionType === "EMAIL") {
-            //     console.log(flowRunDetails?.flow.actions)
-            //     console.log(currentAction.type.actionType)
-            //     console.log("Reaching Wrong place")
-            // }
-
-            if (currentAction.type.actionType === "NOTIFICATION") {
-                console.log("Sending out Notification");
+            switch (currentAction.type.actionType) {
+                case "EMAIL":
+                    console.log(flowRunMetadata);
+                case "NOTIFICATION":
+                    console.log(flowRunMetadata);
             }
 
             await new Promise(r => setTimeout(r, 500));

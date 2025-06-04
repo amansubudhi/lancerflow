@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { InvoiceStatus } from "@repo/db/client";
 
 export const SignupSchema = z.object({
     email: z.string().email(),
@@ -14,6 +15,10 @@ export const SigninSchema = z.object({
     provider: z.enum(["LOCAL", "GOOGLE"]),
     providerId: z.string().optional()
 })
+
+export const UserUpdateSchema = z.object({
+    testimonialFormUrl: z.string().optional()
+});
 
 export const FlowCreateSchema = z.object({
     name: z.string().optional(),
@@ -35,24 +40,45 @@ export const FlowUpdateSchema = z.object({
     })).optional()
 })
 
+export const ClientCreateSchema = z.object({
+    name: z.string(),
+    email: z.string().email(),
+    companyName: z.string().optional(),
+    phone: z.string().optional(),
+    notes: z.string().optional(),
+    deadline: z.date(),
+    services: z.array(z.object({
+        name: z.string(),
+        price: z.number().nonnegative()
+    })).optional()
+});
 
-export const createInvoiceDraftSchema = z.object({
-    userId: z.number(),
-    clientName: z.string(),
-    clientEmail: z.string().email(),
-    senderName: z.string(),
-    senderEmail: z.string().email(),
-    threadId: z.string(),
-    flowRunId: z.string()
+export const ClientUpdateSchema = z.object({
+    name: z.string().optional(),
+    email: z.string().email().optional(),
+    companyName: z.string().optional(),
+    phone: z.string().optional(),
+    notes: z.string().optional(),
+    services: z.array(z.object({
+        name: z.string(),
+        price: z.number()
+    })).optional(),
 });
 
 export const InvoiceUpdateSchema = z.object({
-    clientName: z.string().optional(),
-    clientEmail: z.string().email().optional(),
-    senderName: z.string().optional(),
-    senderEmail: z.string().email().optional(),
     services: z.array(z.object({
         name: z.string(),
-        price: z.string()
-    })).optional()
+        price: z.number().nonnegative(),
+    })).optional(),
+
+    clientsnapshot: z.object({
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        companyName: z.string().optional(),
+        phone: z.string().optional(),
+        notes: z.string().optional()
+    }).optional(),
+
+    status: z.nativeEnum(InvoiceStatus).optional(),
+    invoiceHtml: z.string().optional(),
 })
