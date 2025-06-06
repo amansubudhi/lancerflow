@@ -85,7 +85,7 @@ router.patch("/:invoiceId/mark-ready", authMiddleware, async (req, res) => {
                 userId
             },
             data: {
-                status: "SENT"
+                status: "READY"
             }
         });
 

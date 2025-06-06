@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 import { authMiddleware } from '../middleware';
 
 const router = Router();
@@ -8,7 +8,7 @@ router.get("/", authMiddleware, async (req, res) => {
     try {
         const userId = Number(req.id);
 
-        const connectedAccount = await client.connectedAccount.findMany({
+        const connectedAccount = await db.connectedAccount.findMany({
             where: {
                 userId,
             }
@@ -31,7 +31,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
         const userId = Number(req.id);
         const accoundId = req.params.id;
 
-        const account = await client.connectedAccount.findUnique({
+        const account = await db.connectedAccount.findUnique({
             where: {
                 id: Number(accoundId),
             }
@@ -43,7 +43,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
             });
         }
 
-        await client.connectedAccount.delete({
+        await db.connectedAccount.delete({
             where: {
                 id: Number(accoundId),
             }

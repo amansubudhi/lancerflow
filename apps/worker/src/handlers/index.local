@@ -1,0 +1,16 @@
+// handlers/index.ts
+
+import { FlowRunMetadata } from "../types/flowRunMetadata";
+import { clientOnboardingEmailHandler, testimonialRequestEmailHandler } from "./emailHandlers";
+
+export default async function emailHandlers(metadata: FlowRunMetadata, result: any) {
+    switch (metadata.type) {
+        case "CLIENT_ONBOARDING":
+            if (metadata.emailMetadata.emailType === "INVOICE")
+                await clientOnboardingEmailHandler(metadata.invoiceId, result.resendData.id!);
+            break;
+        case "SCHEDULE":
+            if (metadata.emailMetadata.emailType === "TESTIMONIAL_REQUEST")
+                await testimonialRequestEmailHandler(metadata.clientId!)
+    }
+}

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware";
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 import { ClientCreateSchema, ClientUpdateSchema } from "../types";
 
 const router = Router();
@@ -14,7 +14,7 @@ router.get("/", authMiddleware, async (req, res) => {
     try {
         const userId = Number(req.id);
 
-        const clients = await client.client.findMany({
+        const clients = await db.client.findMany({
             where: {
                 userId
             },
@@ -37,7 +37,7 @@ router.get("/:clientId", authMiddleware, async (req, res) => {
         const userId = Number(req.id);
         const clientId = req.params.clientId;
 
-        const clientDetail = await client.client.findFirst({
+        const clientDetail = await db.client.findFirst({
             where: {
                 id: Number(clientId),
                 userId,
@@ -78,7 +78,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
         const { name, email, companyName, phone, notes, services, deadline } = parsedBody.data;
 
-        const result = await client.$transaction(async (tx) => {
+        const result = await db.$transaction(async (tx) => {
             const newClient = await tx.client.create({
                 data: {
                     userId,
@@ -145,7 +145,7 @@ router.put("/:clientId", authMiddleware, async (req, res) => {
 
         const { name, email, companyName, phone, notes, services } = parsedData.data;
 
-        const updatedClient = await client.client.update({
+        const updatedClient = await db.client.update({
             where: {
                 id: clientId,
                 userId,

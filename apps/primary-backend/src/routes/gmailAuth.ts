@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { oauth2client } from '../utils/googleClient';
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 import { authMiddleware } from '../middleware';
 import { google } from 'googleapis';
 
@@ -35,7 +35,7 @@ router.get("/callback", async (req, res) => {
         const { data: profile } = await oauth2.userinfo.get();
         const userEmail = profile.email;
 
-        const existingAccount = await client.connectedAccount.findFirst({
+        const existingAccount = await db.connectedAccount.findFirst({
             where: {
                 userId,
                 provider: 'GMAIL'
@@ -51,7 +51,7 @@ router.get("/callback", async (req, res) => {
         }
 
         if (existingAccount) {
-            await client.connectedAccount.update({
+            await db.connectedAccount.update({
                 where: {
                     id: existingAccount.id
                 },
@@ -63,7 +63,7 @@ router.get("/callback", async (req, res) => {
             })
         }
 
-        await client.connectedAccount.create({
+        await db.connectedAccount.create({
             data: {
                 userId,
                 type: 'OAUTH',
@@ -86,7 +86,7 @@ router.post("/refreshToken", authMiddleware, async (req, res) => {
     let connectedAccount;
 
     try {
-        connectedAccount = await client.connectedAccount.findFirst({
+        connectedAccount = await db.connectedAccount.findFirst({
             where: {
                 userId,
                 provider: 'GMAIL'
@@ -111,7 +111,7 @@ router.post("/refreshToken", authMiddleware, async (req, res) => {
             });
         }
 
-        await client.connectedAccount.update({
+        await db.connectedAccount.update({
             where: {
                 id: connectedAccount.id
             },
@@ -131,7 +131,7 @@ router.post("/refreshToken", authMiddleware, async (req, res) => {
             err?.response?.status === 400 ||
             err?.response?.data?.error === 'invalid_grant'
         ) {
-            await client.connectedAccount.update({
+            await db.connectedAccount.update({
                 where: {
                     id: connectedAccount?.id,
                 },

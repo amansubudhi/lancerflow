@@ -149,6 +149,7 @@ model Invoice {
   amountDue      Float
   status         InvoiceStatus
   pdfUrl         String?
+  sentEmailId    String?
   followUpSent   Boolean       @default(false)
   flowRunId      String?       @unique
   createdAt      DateTime      @default(now())
@@ -214,10 +215,12 @@ enum ActionType {
   INVOICE
   DELAY
   NOTIFICATION
+  TOGGL
 }
 
 enum InvoiceStatus {
   DRAFT
+  READY
   SENT
   PAID
   PARTIALLY_PAID

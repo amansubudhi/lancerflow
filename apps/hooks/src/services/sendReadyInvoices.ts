@@ -33,7 +33,7 @@ export async function sendReadyInvoices() {
                 include: {
                     invoices: {
                         where: {
-                            status: "SENT"
+                            status: "READY"
                         }
                     }
                 }
@@ -44,9 +44,18 @@ export async function sendReadyInvoices() {
 
                 const invoice = client.invoices[0];
 
+                const snapshot = invoice?.clientsnapshot as {
+                    name: string;
+                    email: string;
+                    phone?: string;
+                    notes?: string;
+                    company?: string;
+                };
+
                 const emailMetadata = {
-                    clientName: client.name,
-                    clientEmail: client.email,
+                    emailType: "invoice",
+                    clientName: snapshot.name,
+                    clientEmail: snapshot.email,
                     userName: trigger.flow.user.name,
                     userEmail: trigger.flow.user.email,
                     pdfUrl: invoice?.pdfUrl,
@@ -58,11 +67,6 @@ export async function sendReadyInvoices() {
                         invoiceId: invoice?.id,
                         emailMetadata
                     });
-
-                    // await db.invoice.update({
-                    //     where: { id: invoice.id },
-                    //     data: { status: "EMAILED" },
-                    // });
 
                     console.log(`Invoice email sent for invoice ${invoice?.id} (client ${client.email})`);
 

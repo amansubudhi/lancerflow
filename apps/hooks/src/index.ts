@@ -1,7 +1,7 @@
 import "./config/env"
 
 import express from "express";
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 
 import "./services/cronJobService"
 
@@ -16,7 +16,7 @@ app.post("/trigger/:triggerId", async (req, res) => {
     const metadata = req.body;
 
     try {
-        const trigger = await client.trigger.findUnique({
+        const trigger = await db.trigger.findUnique({
             where: {
                 id: triggerId
             },
@@ -31,7 +31,7 @@ app.post("/trigger/:triggerId", async (req, res) => {
 
         const flowId = trigger.flowId
 
-        await client.$transaction(async tx => {
+        await db.$transaction(async tx => {
             const run = await tx.flowRun.create({
                 data: {
                     flowId,

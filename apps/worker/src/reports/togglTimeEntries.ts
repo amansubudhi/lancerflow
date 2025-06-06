@@ -1,4 +1,4 @@
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 import axios from "axios";
 
 type TogglDetails = {
@@ -11,7 +11,7 @@ export async function fetchTogglTimeEntries({
     reportDay,
 }: TogglDetails, userId: number) {
     try {
-        const API_KEY = await client.connectedAccount.findFirst({
+        const API_KEY = await db.connectedAccount.findFirst({
             where: {
                 id: connectedAccountId
             },
@@ -20,7 +20,7 @@ export async function fetchTogglTimeEntries({
             }
         });
 
-        const userDetails = await client.user.findFirst({
+        const userDetails = await db.user.findFirst({
             where: {
                 id: userId
             },

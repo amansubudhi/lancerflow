@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware";
 import { FlowCreateSchema, FlowUpdateSchema } from "../types";
-import client from "@repo/db/client"
-import { string } from "zod";
+import db from "@repo/db/client"
 import generateUniqueName from "../utils/generateUniqueName";
 
 const router = Router();
@@ -23,7 +22,7 @@ router.post("/", authMiddleware, async (req, res) => {
     try {
         const finalName = parsedData.data.name ?? (await generateUniqueName(Number(userId)))
 
-        const flow = await client.$transaction(async tx => {
+        const flow = await db.$transaction(async tx => {
             const createdFlow = await tx.flow.create({
                 data: {
                     userId,
@@ -64,7 +63,7 @@ router.post("/", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
     const userId = req.id;
 
-    const flows = await client.flow.findMany({
+    const flows = await db.flow.findMany({
         where: {
             userId
         },
@@ -85,7 +84,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
 router.get("/:flowId", authMiddleware, async (req, res) => {
     const userId = req.id
-    const flow = await client.flow.findUnique({
+    const flow = await db.flow.findUnique({
         where: {
             id: req.params.flowId,
             userId
@@ -125,9 +124,9 @@ router.put("/:flowId", authMiddleware, async (req, res) => {
         }
 
 
-        const flow = await client.$transaction(async tx => {
+        const flow = await db.$transaction(async tx => {
 
-            await client.action.deleteMany({
+            await db.action.deleteMany({
                 where: {
                     flowId: id,
                     flow: {
@@ -186,7 +185,7 @@ router.delete("/:flowId", authMiddleware, async (req, res) => {
     const id = req.params.flowId;
 
     try {
-        const flow = await client.flow.findUnique({
+        const flow = await db.flow.findUnique({
             where: {
                 id,
                 userId
@@ -199,7 +198,7 @@ router.delete("/:flowId", authMiddleware, async (req, res) => {
             })
         }
 
-        await client.$transaction(async (tx) => {
+        await db.$transaction(async (tx) => {
             await tx.action.deleteMany({
                 where: {
                     flowId: id

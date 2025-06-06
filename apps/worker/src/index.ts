@@ -2,9 +2,10 @@ import "./config/env"
 
 import { Kafka, Partitioners } from "kafkajs"
 import db from "@repo/db/client"
-import { hasEmailMetadata, hasTogglMetadata } from "./types/flowRunMetadata"
-import createInvoiceDraft from "./invoices/generateInvoiceDraft"
-import { fetchTogglTimeEntries } from "./reports/togglTimeEntries"
+import { EmailMetadata, FlowRunMetadata } from "./types/flowRunMetadata"
+import { emailSendInvoice, emailSendTestimonial } from "./lib/email"
+import { emailHandlers } from "./handlers/emailHandlers"
+
 
 
 const kafka = new Kafka({
@@ -70,13 +71,63 @@ async function main() {
                 return;
             }
 
-            const flowRunMetadata = flowRunDetails?.metadata;
+            const flowRunMetadata = flowRunDetails?.metadata as unknown as FlowRunMetadata;
 
             switch (currentAction.type.actionType) {
                 case "EMAIL":
-                    console.log(flowRunMetadata);
+                    if ("emailMetadata" in flowRunMetadata) {
+                        const emailData: EmailMetadata = flowRunMetadata.emailMetadata;
+                        await emailHandlers(flowRunMetadata);
+
+                        // switch (emailData.emailType) {
+                        //     case "INVOICE":
+                        //         if (result.status === 'success') {
+                        //             await db.invoice.update({
+                        //                 where: {
+                        //                     id: invoiceId,
+                        //                 },
+                        //                 data: {
+                        //                     status: "SENT",
+                        //                     sentEmailId: result.resendData.id!,
+                        //                 }
+                        //             })
+                        //         };
+                        //         break;
+                        //     case "TESTIMONIAL_REQUEST":
+                        //         const result = await emailSendTestimonial(emailData);
+                        //         if (result.status === 'success') {
+                        //             await db.client.update({
+                        //                 where: {
+                        //                     id: clientId,
+                        //                 },
+                        //                 data: {
+                        //                     testimonialRequested: true
+                        //                 }
+                        //             })
+                        //         }
+                        // }
+                    }
+                    // if ("emailMetadata" in flowRunMetadata) {
+                    //     const emailData: EmailMetadata = flowRunMetadata.emailMetadata;
+                    //     let result;
+                    //     if (emailData.emailType === "INVOICE") {
+                    //         result = await emailSendInvoice(emailData);
+                    //     } else if (emailData.emailType === "TESTIMONIAL_REQUEST") {
+                    //         result = await emailSendTestimonial(emailData);
+                    //     }
+                    //     if (result && result.status === 'success') {
+                    //         await emailHandlers(flowRunMetadata, result);
+                    //     }
+                    //     console.log(result);
+                    // } else {
+                    //     console.error("emailMetadata missing in metadata");
+                    // }
+
+                    break;
                 case "NOTIFICATION":
+                    console.log("Wrong case")
                     console.log(flowRunMetadata);
+                    break;
             }
 
             await new Promise(r => setTimeout(r, 500));

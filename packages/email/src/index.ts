@@ -1,11 +1,12 @@
 import { Resend } from "resend"
 
 
-type SendEmailParams = {
+type SendEmailOptions = {
     to: string;
     subject: string;
     htmlContent: string;
     replyTo?: string;
+    scheduledAt?: Date;
     attachments?: [];
 };
 
@@ -14,18 +15,25 @@ export default async function sendEmail({
     subject,
     htmlContent,
     replyTo,
+    scheduledAt,
     attachments
-}: SendEmailParams): Promise<{ data: any; error: any }> {
+}: SendEmailOptions): Promise<{ data: any; error: any }> {
     try {
-        const resend = new Resend(process.env.RESEND_API_KEY!);
-        const result = await resend.emails.send({
+        const sendParams: any = {
             from: 'LancerFlow <noreply@lancerflow.amansubudhi.tech>',
             to: [to],
             subject,
             html: htmlContent,
             replyTo,
             attachments
-        });
+        };
+
+        if (scheduledAt) {
+            sendParams.scheduled_at = scheduledAt;
+        }
+
+        const resend = new Resend(process.env.RESEND_API_KEY!);
+        const result = await resend.emails.send(sendParams);
 
         return result;
     } catch (error) {

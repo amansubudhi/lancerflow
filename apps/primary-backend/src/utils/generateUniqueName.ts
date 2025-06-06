@@ -1,8 +1,7 @@
-import client from "@repo/db/client"
-import { boolean } from "zod";
+import db from "@repo/db/client"
 
 export default async function generateUniqueName(userId: number) {
-    const flows = await client.flow.findMany({
+    const flows = await db.flow.findMany({
         where: {
             userId,
             name: {

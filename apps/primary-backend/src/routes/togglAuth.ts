@@ -1,5 +1,5 @@
 import { Router } from "express";
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 
 const router = Router();
 
@@ -9,10 +9,10 @@ router.post("/connect", async (req, res) => {
         const userId = 3;
         const API_KEY = req.body.API_KEY;
 
-        const existingAccount = await client.connectedAccount.findFirst({
+        const existingAccount = await db.connectedAccount.findFirst({
             where: {
                 userId,
-                provider: 'Toggl'
+                provider: "TOGGL"
             },
         });
 
@@ -22,10 +22,10 @@ router.post("/connect", async (req, res) => {
             })
         }
 
-        await client.connectedAccount.create({
+        await db.connectedAccount.create({
             data: {
                 userId,
-                provider: 'Toggl',
+                provider: "TOGGL",
                 type: "API_KEY",
                 apiKey: API_KEY
             }

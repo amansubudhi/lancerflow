@@ -24,10 +24,11 @@ app.use("/api/v1/flow", flowRouter);
 app.use("/api/v1/connected-account", connectedAccountRouter);
 
 app.use("/api/v1/client", clientRouter);
+app.use("/api/v1/invoices", invoiceRouter);
+
 
 app.use("/api/auth/google", gmailAuthRouter);
 app.use("/api/auth/toggl", togglauthRouter);
 
-app.use("/api/invoices", invoiceRouter);
 
 app.listen(PORT)

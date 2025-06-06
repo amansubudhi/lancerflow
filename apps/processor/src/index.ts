@@ -1,5 +1,5 @@
 import { Kafka, Partitioners } from "kafkajs";
-import client from "@repo/db/client"
+import db from "@repo/db/client"
 
 const kafka = new Kafka({
     clientId: 'processor-service',
@@ -24,7 +24,7 @@ async function main() {
 
     while (true) {
         try {
-            const outboxRows = await client.flowRunOutbox.findMany({
+            const outboxRows = await db.flowRunOutbox.findMany({
                 where: {},
                 take: 10
             });
@@ -44,7 +44,7 @@ async function main() {
                 }))
             })
 
-            await client.flowRunOutbox.deleteMany({
+            await db.flowRunOutbox.deleteMany({
                 where: {
                     id: {
                         in: outboxRows.map(row => row.id)

@@ -46,7 +46,10 @@ export const ClientCreateSchema = z.object({
     companyName: z.string().optional(),
     phone: z.string().optional(),
     notes: z.string().optional(),
-    deadline: z.date(),
+    deadline: z.preprocess(
+        (val) => typeof val === 'string' || val instanceof Date ? new Date(val) : undefined,
+        z.date()
+    ),
     services: z.array(z.object({
         name: z.string(),
         price: z.number().nonnegative()
