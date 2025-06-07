@@ -18,6 +18,10 @@ interface TestimonialEmailMetadata extends BaseEmailMetadata {
     formUrl: string;
 }
 
+// interface FollowUpEmailMetadata extends BaseEmailMetadata {
+//     pdfUrl: string;
+// }
+
 export type EmailMetadata = InvoiceEmailMetadata | TestimonialEmailMetadata;
 
 export type InvoiceMeta = Extract<EmailMetadata, { emailType: "invoice" }>;
@@ -36,6 +40,11 @@ export type FlowRunMetadata =
         clientId: number;
         emailMetadata: EmailMetadata
     }
+// {
+//     type: "DELAY";
+//     invoiceId: string;
+//     emailMetadata: FollowUpEmailMetadata
+// }
 
 // export type EmailMetadata =
 //     | (BaseEmailMetadata & {

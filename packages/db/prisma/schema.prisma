@@ -140,23 +140,24 @@ model Client {
 }
 
 model Invoice {
-  id             String        @id @default(uuid())
-  invoiceNumber  Int           @unique @default(autoincrement())
-  userId         Int
-  clientId       Int
-  services       Json?
-  clientsnapshot Json?
-  amountDue      Float
-  status         InvoiceStatus
-  pdfUrl         String?
-  sentEmailId    String?
-  followUpSent   Boolean       @default(false)
-  flowRunId      String?       @unique
-  createdAt      DateTime      @default(now())
-  user           User          @relation(fields: [userId], references: [id])
-  client         Client        @relation(fields: [clientId], references: [id])
-  flowRun        FlowRun?      @relation(fields: [flowRunId], references: [id])
-  approval       Approval[]
+  id              String        @id @default(uuid())
+  invoiceNumber   Int           @unique @default(autoincrement())
+  userId          Int
+  clientId        Int
+  services        Json?
+  clientsnapshot  Json?
+  amountDue       Float
+  status          InvoiceStatus
+  pdfUrl          String?
+  sentEmailId     String?
+  followUpSent    Boolean       @default(false)
+  followUpEmailId String?
+  flowRunId       String?       @unique
+  createdAt       DateTime      @default(now())
+  user            User          @relation(fields: [userId], references: [id])
+  client          Client        @relation(fields: [clientId], references: [id])
+  flowRun         FlowRun?      @relation(fields: [flowRunId], references: [id])
+  approval        Approval[]
 }
 
 // Logs (Error & Activity Logs)

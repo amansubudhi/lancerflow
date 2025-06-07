@@ -5,6 +5,7 @@ import db from "@repo/db/client"
 import { EmailMetadata, FlowRunMetadata } from "./types/flowRunMetadata"
 import { emailSendInvoice, emailSendTestimonial } from "./lib/email"
 import { emailHandlers } from "./handlers/emailHandlers"
+import { delayHandlers } from "./handlers/delayHandlers"
 
 
 
@@ -75,38 +76,38 @@ async function main() {
 
             switch (currentAction.type.actionType) {
                 case "EMAIL":
-                    if ("emailMetadata" in flowRunMetadata) {
-                        const emailData: EmailMetadata = flowRunMetadata.emailMetadata;
-                        await emailHandlers(flowRunMetadata);
+                    // if ("emailMetadata" in flowRunMetadata) {
+                    //     const emailData: EmailMetadata = flowRunMetadata.emailMetadata;
+                    await emailHandlers(flowRunMetadata);
 
-                        // switch (emailData.emailType) {
-                        //     case "INVOICE":
-                        //         if (result.status === 'success') {
-                        //             await db.invoice.update({
-                        //                 where: {
-                        //                     id: invoiceId,
-                        //                 },
-                        //                 data: {
-                        //                     status: "SENT",
-                        //                     sentEmailId: result.resendData.id!,
-                        //                 }
-                        //             })
-                        //         };
-                        //         break;
-                        //     case "TESTIMONIAL_REQUEST":
-                        //         const result = await emailSendTestimonial(emailData);
-                        //         if (result.status === 'success') {
-                        //             await db.client.update({
-                        //                 where: {
-                        //                     id: clientId,
-                        //                 },
-                        //                 data: {
-                        //                     testimonialRequested: true
-                        //                 }
-                        //             })
-                        //         }
-                        // }
-                    }
+                    // switch (emailData.emailType) {
+                    //     case "INVOICE":
+                    //         if (result.status === 'success') {
+                    //             await db.invoice.update({
+                    //                 where: {
+                    //                     id: invoiceId,
+                    //                 },
+                    //                 data: {
+                    //                     status: "SENT",
+                    //                     sentEmailId: result.resendData.id!,
+                    //                 }
+                    //             })
+                    //         };
+                    //         break;
+                    //     case "TESTIMONIAL_REQUEST":
+                    //         const result = await emailSendTestimonial(emailData);
+                    //         if (result.status === 'success') {
+                    //             await db.client.update({
+                    //                 where: {
+                    //                     id: clientId,
+                    //                 },
+                    //                 data: {
+                    //                     testimonialRequested: true
+                    //                 }
+                    //             })
+                    //         }
+                    // }
+                    // }
                     // if ("emailMetadata" in flowRunMetadata) {
                     //     const emailData: EmailMetadata = flowRunMetadata.emailMetadata;
                     //     let result;
@@ -124,9 +125,11 @@ async function main() {
                     // }
 
                     break;
-                case "NOTIFICATION":
-                    console.log("Wrong case")
-                    console.log(flowRunMetadata);
+                case "DELAY":
+                    console.log("Reached DELAY ACTION");
+                    if (flowRunMetadata.type === "CLIENT_ONBOARDING") {
+                        await delayHandlers(flowRunMetadata);
+                    }
                     break;
             }
 

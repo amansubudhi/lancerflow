@@ -1,4 +1,4 @@
-import { EmailMetadata, InvoiceMeta, TestimonialMeta } from "../types/flowRunMetadata";
+import { EmailMetadata, FlowRunMetadata, InvoiceMeta, TestimonialMeta } from "../types/flowRunMetadata";
 
 
 export function generateInvoiceEmailHTML(props: InvoiceMeta): string {
@@ -68,4 +68,29 @@ export function generateTestimonialHTML(props: TestimonialMeta): string {
       </p>
     </div>
   `;
+}
+
+
+export function generateFollowUpEmail(props: InvoiceMeta) {
+  const { clientName, pdfUrl, userName } = props;
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; color: #333; line-height: 1.6;">
+      <p>Hi ${clientName},</p>
+
+      <p>I hope you're doing well. Just a friendly reminder that the invoice I shared with you is still pending.</p>
+
+      <p>If you’ve already completed the payment, please ignore this message. Otherwise, you can view the invoice using the button below:</p>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href=${pdfUrl} style="background-color: #007bff; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold;">
+          View Invoice
+        </a>
+      </div>
+
+      <p>If you have any questions or concerns, feel free to reply to this email — I’m happy to assist!</p>
+
+      <p>Thanks again,<br />
+      ${userName}</p>
+  </div>
+  `
 }

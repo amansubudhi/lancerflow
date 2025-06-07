@@ -6,11 +6,11 @@ import { sendTestimonialForm } from "./sendTestimonialForm";
 //Run cron every 5 mins - change the time below
 cron.schedule('* * * * *', async () => {
     try {
-        console.log('Checking clients with invoices paid to send testimonial...');
-        await sendTestimonialForm();
-        // await sendReadyInvoices();
+        console.log('Checking clients with invoices ready...');
+        // await sendTestimonialForm();
+        await sendReadyInvoices();
     } catch (error) {
-        console.error('Error in testimonail cron job:', error);
+        console.error('Error in cron job:', error);
     }
 });
 
