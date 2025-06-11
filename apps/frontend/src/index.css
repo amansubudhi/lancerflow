@@ -1,9 +1,9 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+/* @import "tailwindcss";
+@import "tw-animate-css"; */
 
 /* Define all color variables in HSL format */
 
-:root {
+/* :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
   --card: 0 0% 100%;
@@ -11,11 +11,8 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
 
-  /* ✅ Blue primary */
   --primary: 217.2 91.2% 59.8%;
-  /* #3b82f6 */
   --primary-foreground: 0 0% 100%;
-  /* white text on blue */
 
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
@@ -34,9 +31,9 @@
   --ring: 217.2 91.2% 59.8%;
 
   --radius: 0.5rem;
-}
+} */
 
-.dark {
+/* .dark {
   --background: 222.2 84% 4.9%;
   --foreground: 210 40% 98%;
   --card: 222.2 84% 4.9%;
@@ -44,7 +41,6 @@
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
 
-  /* ✅ Same blue, but slightly lighter foreground for contrast */
   --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 222.2 47.4% 11.2%;
 
@@ -63,7 +59,7 @@
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 217.2 91.2% 59.8%;
-}
+} */
 
 /* @layer base {
   * {
@@ -79,7 +75,7 @@
 
 
 
-/* @import "tailwindcss";
+@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -195,7 +191,8 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-} */
+}
